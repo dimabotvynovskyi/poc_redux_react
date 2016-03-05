@@ -1,0 +1,36 @@
+<html>
+<head>
+    <title>Sample "Hello, World" Application</title>
+    <script src="https://fb.me/react-0.14.7.js"></script>
+    <script src="https://fb.me/react-dom-0.14.7.js"></script>
+    <script src="js/lib/require.js"></script>
+</head>
+<body>
+<div id="container"></div>
+
+<script src="js/portal.js"></script>
+
+<script>
+    require.config({
+        paths: {
+            'plugin1.init': '/plugin1/define',
+            'plugin2.init': '/plugin2/define',
+            'plugin3.init': '/plugin3/define'
+        }
+    });
+
+    require([
+        "portal.init",
+        "plugin1.init",
+        "plugin2.init",
+        "plugin3.init"
+    ], function(portalName){
+       console.log("Portal [" + portalName + "] with related plugins has initialized!");
+
+        require(["plugin1.ping", "plugin2.ping", "plugin3.ping"], function() {
+            console.log("Ping finished");
+        });
+    });
+</script>
+</body>
+</html>
