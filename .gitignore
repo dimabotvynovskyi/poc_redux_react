@@ -10,4 +10,4 @@
 
 # Maven
 target/
-out/
+/out/
