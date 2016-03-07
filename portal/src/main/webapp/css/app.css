@@ -1,0 +1,14 @@
+.PersonList {
+    max-width: 300px;
+}
+
+.PersonList__Row {
+    border-bottom: 1px solid;
+    border-top: 1px solid;
+}
+
+.PersonList__Col {
+    display: inline-block;
+    width: 100px;
+    text-align: center;
+}

@@ -4,8 +4,12 @@
     <title>Require, react, redux</title>
     <script src="https://fb.me/react-0.14.7.js"></script>
     <script src="https://fb.me/react-dom-0.14.7.js"></script>
+    <script src="js/lib/jquery-2.2.1.min.js"></script>
     <script src="js/lib/redux.min.js"></script>
     <script src="js/lib/require.js"></script>
+    <script src="js/components.js"></script>
+
+    <link rel="stylesheet" type="text/css" href="/portal/css/app.css">
 </head>
 <body>
 
@@ -23,12 +27,11 @@
     });
 
     require([
-        "portal-main",
         "reducers",
         "plugin1.init",
         "plugin2.init",
         "plugin3.init"
-    ], function (main, reducers) {
+    ], function (reducers) {
         require(["plugin1.ping", "plugin2.ping", "plugin3.ping"], function () {
             console.log("Ping finished");
         });
@@ -37,7 +40,20 @@
 
         var store = Redux.createStore(reducers.counterReducer);
 
-        main.render(store);
+        function render() {
+            ReactDOM.render(
+                    React.createElement("div", null,
+                            React.createElement(Counter, {"value":store.getState().counter, "storeDispatch":store.dispatch}),
+                            React.createElement("hr", null),
+                            React.createElement(PersonList, {"persons":[{"id":"1", "name":"test", "age":"1"}]})
+                    ),
+                    document.getElementById('root')
+            );
+        }
+
+        render();
+        store.subscribe(render);
+
     });
 
 </script>
