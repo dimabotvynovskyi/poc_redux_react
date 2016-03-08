@@ -5,16 +5,8 @@ var Counter = React.createClass({
         return (
             React.createElement('div', null,
                 React.createElement('h1', null, "Value " + self.props.value),
-                React.createElement('button', {
-                    "onClick": function () {
-                        self.props.storeDispatch({type: 'INCREMENT'})
-                    }
-                }, "+"),
-                React.createElement('button', {
-                    "onClick": function () {
-                        self.props.storeDispatch({type: 'DECREMENT'})
-                    }
-                }, "-")
+                React.createElement('button', {"onClick": self.props.onIncrement}, "+"),
+                React.createElement('button', {"onClick": self.props.onDecrement}, "-")
             )
         );
     }
@@ -32,6 +24,13 @@ var PersonList = React.createClass({displayName: 'PersonList',
             ));
         }
 
-        return React.createElement('div', {"className":"PersonList"}, React.createElement('h3', null, "Persons"), els);
+        return React.createElement('div', {"className":"PersonList"},
+            React.createElement('h3', null, "Persons"),
+            React.createElement('div', {"className":"PersonList__Row"},
+                React.createElement('div', {"className":"PersonList__Header"}, "ID"),
+                React.createElement('div', {"className":"PersonList__Header"}, "Name"),
+                React.createElement('div', {"className":"PersonList__Header"}, "Age")
+            ),
+            els);
     }
 });
