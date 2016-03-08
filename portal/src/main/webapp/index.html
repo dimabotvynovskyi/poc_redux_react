@@ -38,14 +38,63 @@
 
         console.log("Portal with related plugins has initialized!");
 
-        var store = Redux.createStore(reducers.counterReducer);
+        function thunkMiddleware(_ref) {
+            var dispatch = _ref.dispatch;
+            var getState = _ref.getState;
+
+            return function (next) {
+                return function (action) {
+                    return typeof action === 'function' ? action(dispatch, getState) : next(action);
+                };
+            };
+        }
+
+        var store = Redux.createStore(
+                Redux.combineReducers({
+                    counter: reducers.counterReducer,
+                    persons: reducers.personsReducer
+                }),
+                Redux.applyMiddleware(
+                    thunkMiddleware
+                )
+        );
+
+        function requestPersons() {
+            return {
+                type: "REQUEST_PERSONS_LIST"
+            };
+        }
+
+        function receivePersons(json) {
+            return {
+                type: "RECEIVE_PERSONS_LIST",
+                items: json
+            };
+        }
+
+        function fetchPersons() {
+            return function (dispatch) {
+                dispatch(requestPersons());
+
+                return $.get("/portal/data.json", function (json) {
+                    console.log("Fetching finished" + json);
+                    dispatch(receivePersons(json))
+                });
+            }
+        }
 
         function render() {
             ReactDOM.render(
                     React.createElement("div", null,
-                            React.createElement(Counter, {"value":store.getState().counter, "storeDispatch":store.dispatch}),
+                            React.createElement(Counter, {
+                                "value": store.getState().counter,
+                                "storeDispatch": store.dispatch
+                            }),
                             React.createElement("hr", null),
-                            React.createElement(PersonList, {"persons":[{"id":"1", "name":"test", "age":"1"}]})
+                            React.createElement(PersonList, {"persons": store.getState().persons.items}),
+                            React.createElement("br", null),
+                            React.createElement("button", {"onClick": function() {store.dispatch(fetchPersons());}}, "Load Persons"),
+                            React.createElement("hr", null)
                     ),
                     document.getElementById('root')
             );
@@ -53,7 +102,6 @@
 
         render();
         store.subscribe(render);
-
     });
 
 </script>
