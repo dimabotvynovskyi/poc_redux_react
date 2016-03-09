@@ -34,3 +34,24 @@ var PersonList = React.createClass({displayName: 'PersonList',
             els);
     }
 });
+
+var NavBar = React.createClass({
+    displayName: 'NavBar',
+    render: function() {
+        var self = this;
+
+        var createCallback = function(viewName) {
+            return function() {
+                console.log("click view " + viewName);
+                self.props.viewManager.render(viewName);
+            }
+        };
+        var items = [];
+        for (var i = 0; i < this.props.navItems.length; i++) {
+            var navItem = this.props.navItems[i];
+            items.push(React.createElement('button', {key: navItem.label, onClick: createCallback(navItem.viewName), className: "NavItem"}, navItem.label));
+        }
+
+        return React.createElement('div', {"className" : "NavBar"}, items);
+    }
+});

@@ -1,3 +1,22 @@
+#sideNav {
+    position: absolute;
+    overflow: auto;
+    padding: 10px;
+    width: 60px;
+    background: #ECF5E4;
+    border-right: 1px solid #231F20;
+    bottom: 0;
+    top: 0;
+}
+
+#sideNav button {
+    margin-bottom: 5px;
+}
+
+#viewContainer {
+    padding-left: 100px;
+}
+
 .PersonList {
     max-width: 300px;
 }

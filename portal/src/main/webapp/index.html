@@ -14,7 +14,8 @@
 </head>
 <body>
 
-<div id="root"></div>
+<div id="sideNav"></div>
+<div id="viewContainer"></div>
 
 
 <script>
@@ -27,90 +28,129 @@
         }
     });
 
+    var navItems = [];
+
+    define("global.nav.items", [], function () {
+        return navItems;
+    });
+
+    define("portal.reducers.map", ["reducers"], function (reducers) {
+        return {
+            counter: reducers.counterReducer,
+            persons: reducers.personsReducer
+        }
+    });
+
+
+
+
     require([
-        "reducers",
+        "global.nav.items",
         "plugin1.init",
         "plugin2.init",
         "plugin3.init"
-    ], function (reducers) {
-        require(["plugin1.ping", "plugin2.ping", "plugin3.ping"], function () {
-            console.log("Ping finished");
+    ], function (navItems) {
+        define("global.store", ["portal.reducers.map", "plugin1.reducers.map"], function (portalReducersMap, plugin1ReducersMap) {
+            /* Create store */
+            return Redux.createStore(
+                    Redux.combineReducers($.extend({}, portalReducersMap, plugin1ReducersMap)),
+                    Redux.applyMiddleware(
+                            thunkMiddleware
+                    )
+            );
         });
 
-        console.log("Portal with related plugins has initialized!");
+        define("global.view.manager", ["global.store"], function (store) {
+            var previousListener;
 
-        /* Create store */
-        var store = Redux.createStore(
-                Redux.combineReducers({
-                    counter: reducers.counterReducer,
-                    persons: reducers.personsReducer
-                }),
-                Redux.applyMiddleware(
-                    thunkMiddleware
-                )
-        );
-
-        /* sync actions (return an object) */
-        function incrementCounterAction() {
             return {
-                type: 'INCREMENT'
+                render: function (viewName) {
+                    require([viewName], function (view) {
+                        if (previousListener) {
+                            previousListener();
+                        }
+
+                        function renderNextView() {
+                            ReactDOM.unmountComponentAtNode(document.getElementById('viewContainer'));
+                            ReactDOM.render(React.createElement(view, {store: store}), document.getElementById('viewContainer'));
+                        }
+
+                        renderNextView();
+                        previousListener = store.subscribe(renderNextView);
+                    });
+                }
             }
-        }
+        });
 
-        function decrementCounterAction() {
-            return {
-                type: 'DECREMENT'
+        require(["global.store", "global.view.manager"], function (store, viewManager) {
+            ReactDOM.render(React.createElement(NavBar, {viewManager: viewManager, navItems: navItems}), document.getElementById('sideNav'));
+            console.log("Portal, plugins and store have initialized!");
+
+            /* sync actions (return an object) */
+            function incrementCounterAction() {
+                return {
+                    type: 'INCREMENT'
+                }
             }
-        }
 
-        function requestPersons() {
-            return {
-                type: "REQUEST_PERSONS_LIST"
-            };
-        }
-
-        function receivePersons(json) {
-            return {
-                type: "RECEIVE_PERSONS_LIST",
-                items: json
-            };
-        }
-        /* sync actions */
-
-        /* Async actions (return function) */
-        function fetchPersons() {
-            return function (dispatch) {
-                dispatch(requestPersons());
-
-                return $.get("/portal/data.json", function (json) {
-                    console.log("Fetching finished" + json);
-                    dispatch(receivePersons(json))
-                });
+            function decrementCounterAction() {
+                return {
+                    type: 'DECREMENT'
+                }
             }
-        }
-        /* Async actions */
 
-        /* Render */
-        function render() {
-            ReactDOM.render(
-                    React.createElement("div", null,
-                            React.createElement(Counter, {
-                                "value": store.getState().counter,
-                                "onIncrement": function() {store.dispatch(incrementCounterAction());},
-                                "onDecrement": function() {store.dispatch(decrementCounterAction());}
-                            }),
-                            React.createElement("hr", null),
-                            React.createElement(PersonList, {"persons": store.getState().persons.items}),
-                            React.createElement("br", null),
-                            React.createElement("button", {"onClick": function() {store.dispatch(fetchPersons());}}, "Load Persons"),
-                            React.createElement("hr", null)
-                    ),
-                    document.getElementById('root')
-            );
-        }
+            function requestPersons() {
+                return {
+                    type: "REQUEST_PERSONS_LIST"
+                };
+            }
 
-        render();
-        store.subscribe(render);
+            function receivePersons(json) {
+                return {
+                    type: "RECEIVE_PERSONS_LIST",
+                    items: json
+                };
+            }
+            /* sync actions */
+
+            /* Async actions (return function) */
+            function fetchPersons() {
+                return function (dispatch) {
+                    dispatch(requestPersons());
+
+                    return $.get("/portal/data.json", function (json) {
+                        console.log("Fetching finished" + json);
+                        dispatch(receivePersons(json))
+                    });
+                }
+            }
+            /* Async actions */
+
+            /* Render */
+            function render() {
+                ReactDOM.render(
+                        React.createElement("div", null,
+                                React.createElement(Counter, {
+                                    "value": store.getState().counter,
+                                    "onIncrement": function() {store.dispatch(incrementCounterAction());},
+                                    "onDecrement": function() {store.dispatch(decrementCounterAction());}
+                                }),
+                                React.createElement("hr", null),
+                                React.createElement(PersonList, {"persons": store.getState().persons.items}),
+                                React.createElement("br", null),
+                                React.createElement("button", {"onClick": function() {store.dispatch(fetchPersons());}}, "Load Persons"),
+                                React.createElement("hr", null)
+                        ),
+                        document.getElementById('viewContainer')
+                );
+            }
+
+            render();
+            store.subscribe(render);
+
+
+
+        });
     });
 
 </script>
