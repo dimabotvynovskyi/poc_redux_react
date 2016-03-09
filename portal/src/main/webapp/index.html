@@ -43,13 +43,11 @@
 
 
 
-
     require([
-        "global.nav.items",
         "plugin1.init",
         "plugin2.init",
         "plugin3.init"
-    ], function (navItems) {
+    ], function () {
         define("global.store", ["portal.reducers.map", "plugin1.reducers.map"], function (portalReducersMap, plugin1ReducersMap) {
             /* Create store */
             return Redux.createStore(
@@ -67,89 +65,58 @@
                 render: function (viewName) {
                     require([viewName], function (view) {
                         if (previousListener) {
+                            console.log("Unsubscribe previous change listener from store");
                             previousListener();
                         }
 
                         function renderNextView() {
                             ReactDOM.unmountComponentAtNode(document.getElementById('viewContainer'));
+                            console.log("Mount view");
                             ReactDOM.render(React.createElement(view, {store: store}), document.getElementById('viewContainer'));
                         }
 
                         renderNextView();
+                        console.log("Subscribe new change listener on the store");
                         previousListener = store.subscribe(renderNextView);
                     });
                 }
             }
         });
 
-        require(["global.store", "global.view.manager"], function (store, viewManager) {
+        require([
+            "global.nav.items",
+            "global.store",
+            "global.view.manager",
+            "actions"
+        ], function (navItems, store, viewManager, portalActions) {
+            define("portal.main.view", function () {
+                return React.createClass({
+                    displayName: 'MainView',
+                    render: function () {
+                        var self = this;
+                        return (
+                                React.createElement("div", null,
+                                        React.createElement(Counter, {
+                                            "value": store.getState().counter,
+                                            "onIncrement": function() {store.dispatch(portalActions.incrementCounterAction());},
+                                            "onDecrement": function() {store.dispatch(portalActions.decrementCounterAction());}
+                                        }),
+                                        React.createElement("hr", null),
+                                        React.createElement(PersonList, {"persons": store.getState().persons.items}),
+                                        React.createElement("br", null),
+                                        React.createElement("button", {"onClick": function() {store.dispatch(portalActions.fetchPersons());}}, "Load Persons"),
+                                        React.createElement("hr", null)
+                                )
+                        );
+                    }
+                });
+            });
+
+            navItems.push({label:"Portal", viewName: "portal.main.view", weight: 1000});
+            navItems.sort(function(a, b){return a.weight < b.weight});
+
             ReactDOM.render(React.createElement(NavBar, {viewManager: viewManager, navItems: navItems}), document.getElementById('sideNav'));
             console.log("Portal, plugins and store have initialized!");
-
-            /* sync actions (return an object) */
-            function incrementCounterAction() {
-                return {
-                    type: 'INCREMENT'
-                }
-            }
-
-            function decrementCounterAction() {
-                return {
-                    type: 'DECREMENT'
-                }
-            }
-
-            function requestPersons() {
-                return {
-                    type: "REQUEST_PERSONS_LIST"
-                };
-            }
-
-            function receivePersons(json) {
-                return {
-                    type: "RECEIVE_PERSONS_LIST",
-                    items: json
-                };
-            }
-            /* sync actions */
-
-            /* Async actions (return function) */
-            function fetchPersons() {
-                return function (dispatch) {
-                    dispatch(requestPersons());
-
-                    return $.get("/portal/data.json", function (json) {
-                        console.log("Fetching finished" + json);
-                        dispatch(receivePersons(json))
-                    });
-                }
-            }
-            /* Async actions */
-
-            /* Render */
-            function render() {
-                ReactDOM.render(
-                        React.createElement("div", null,
-                                React.createElement(Counter, {
-                                    "value": store.getState().counter,
-                                    "onIncrement": function() {store.dispatch(incrementCounterAction());},
-                                    "onDecrement": function() {store.dispatch(decrementCounterAction());}
-                                }),
-                                React.createElement("hr", null),
-                                React.createElement(PersonList, {"persons": store.getState().persons.items}),
-                                React.createElement("br", null),
-                                React.createElement("button", {"onClick": function() {store.dispatch(fetchPersons());}}, "Load Persons"),
-                                React.createElement("hr", null)
-                        ),
-                        document.getElementById('viewContainer')
-                );
-            }
-
-            render();
-            store.subscribe(render);
-
-
-
         });
     });
 

@@ -1,6 +1,6 @@
 define(["global.nav.items"], function (navItemsList) {
     console.log("Plugin 1 available");
-    navItemsList.push({label:"Plugin 1", viewName: "plugin1.main.view"});
+    navItemsList.push({label:"Plugin 1", viewName: "plugin1.main.view", weight: 700});
 
     define("plugin1.reducers.map", [], function () {
         function plugin1CounterReducer(state, action) {
@@ -25,7 +25,6 @@ define(["global.nav.items"], function (navItemsList) {
         return React.createClass({
             displayName: 'MainView',
             render: function () {
-                console.log("Render");
                 var self = this;
                 return (
                     React.createElement('div', null,

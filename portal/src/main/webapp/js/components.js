@@ -42,7 +42,6 @@ var NavBar = React.createClass({
 
         var createCallback = function(viewName) {
             return function() {
-                console.log("click view " + viewName);
                 self.props.viewManager.render(viewName);
             }
         };

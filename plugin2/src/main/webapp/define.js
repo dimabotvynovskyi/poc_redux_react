@@ -1,6 +1,6 @@
 define(["global.nav.items"], function (navItemsList) {
     console.log("Plugin 2 available");
-    navItemsList.push({label:"Plugin 2", viewName: "plugin2.main.view"});
+    navItemsList.push({label:"Plugin 2", viewName: "plugin2.main.view", weight: 500});
 
     define("plugin2.main.view", [], function () {
         return React.createClass({
