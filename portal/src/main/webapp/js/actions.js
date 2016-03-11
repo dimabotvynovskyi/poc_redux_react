@@ -29,7 +29,7 @@ define([], function () {
 
         /* Async actions (return function) */
 
-        fetchPersons: function (json) {
+        fetchPersons: function () {
             return function (dispatch) {
                 dispatch(requestPersons());
 

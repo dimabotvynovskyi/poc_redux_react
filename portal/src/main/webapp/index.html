@@ -7,6 +7,7 @@
     <script src="js/lib/jquery-2.2.1.min.js"></script>
     <script src="js/lib/redux.min.js"></script>
     <script src="js/lib/redux-thunk.js"></script>
+    <script src="js/lib/react-redux.min.js"></script>
     <script src="js/lib/require.js"></script>
     <script src="js/components.js"></script>
 
@@ -48,10 +49,10 @@
         "plugin2.init",
         "plugin3.init"
     ], function () {
-        define("global.store", ["portal.reducers.map", "plugin1.reducers.map"], function (portalReducersMap, plugin1ReducersMap) {
+        define("global.store", ["portal.reducers.map", "plugin1.reducers.map", "plugin3.reducers.map"], function (portalReducersMap, plugin1ReducersMap, plugin3ReducersMap) {
             /* Create store */
             return Redux.createStore(
-                    Redux.combineReducers($.extend({}, portalReducersMap, plugin1ReducersMap)),
+                    Redux.combineReducers($.extend({}, portalReducersMap, plugin1ReducersMap, plugin3ReducersMap)),
                     Redux.applyMiddleware(
                             thunkMiddleware
                     )
@@ -64,20 +65,26 @@
             return {
                 render: function (viewName) {
                     require([viewName], function (view) {
-                        if (previousListener) {
-                            console.log("Unsubscribe previous change listener from store");
-                            previousListener();
-                        }
+//                        if (previousListener) {
+//                            console.log("Unsubscribe previous change listener from store");
+//                            previousListener();
+//                        }
 
-                        function renderNextView() {
+//                        function renderNextView() {
                             ReactDOM.unmountComponentAtNode(document.getElementById('viewContainer'));
                             console.log("Mount view");
-                            ReactDOM.render(React.createElement(view, {store: store}), document.getElementById('viewContainer'));
-                        }
+                            ReactDOM.render(
+                                React.createElement(window.ReactRedux.Provider, {store: store},
+                                    React.createElement(view, {})
+                                ),
+                                document.getElementById('viewContainer')
 
-                        renderNextView();
-                        console.log("Subscribe new change listener on the store");
-                        previousListener = store.subscribe(renderNextView);
+                            );
+//                        }
+
+//                        renderNextView();
+//                        console.log("Subscribe new change listener on the store");
+//                        previousListener = store.subscribe(renderNextView);
                     });
                 }
             }

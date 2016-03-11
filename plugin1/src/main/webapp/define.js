@@ -22,17 +22,36 @@ define(["global.nav.items"], function (navItemsList) {
     });
 
     define("plugin1.main.view", function () {
-        return React.createClass({
+
+        function mapStateToProps(state) {
+            return {
+                cntValue: state.plugin1
+            }
+        }
+
+        function mapDispatchToProps(dispatch) {
+            return {onIncrementClick : function () {
+                    dispatch({type:"PLUGIN1_INCREMENT"});
+                }
+            }
+        }
+
+
+        var Plugin1MainView = React.createClass({
             displayName: 'MainView',
             render: function () {
-                var self = this;
                 return (
-                    React.createElement('div', null,
-                        React.createElement('h1', null, "Value " + this.props.store.getState().plugin1),
-                        React.createElement('button', {"onClick": function() {self.props.store.dispatch({type:"PLUGIN1_INCREMENT"})}}, "Increment")
-                    )
+                        React.createElement('div', null,
+                            React.createElement('h1', null, "Value " + this.props.cntValue),
+                            React.createElement('button', {"onClick": this.props.onIncrementClick}, "Increment")
+                        )
                 );
             }
         });
+
+        return window.ReactRedux.connect(
+            mapStateToProps,
+            mapDispatchToProps
+        )(Plugin1MainView);
     });
 });
